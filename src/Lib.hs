@@ -1,3 +1,5 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module Lib
     ( entry,
       matches,
@@ -7,7 +9,7 @@ module Lib
       none
     ) where
 
-import Prelude hiding (all)
+import Prelude (($), Bool, Eq, Show, String, any, elem, not)
 import Data.List (isInfixOf, sort)
 
 -- Change this to a proper type later
