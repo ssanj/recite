@@ -4,8 +4,14 @@ module Main where
 
 import Lib
 import Text.Parsec (parse)
-import Prelude (($), (++), IO, putStrLn, show)
+import Prelude (($), (++), IO, head, null, putStrLn, show)
+import System.Environment
 
 main :: IO ()
-main = do putStrLn "input: \"myaccount blah,bff,git > *\\n\""
-          putStrLn $ "parsed: " ++ (show $ parse queryP "" "myaccount blah,bff,git > *\n")
+main = do
+          inputs <- getArgs
+          putStrLn $ "input: " ++ (show inputs)
+          let message = if (null inputs) then "usage: command[,command]* > [*|?|^]"
+                        else "parsed: " ++ (show $ parse queryP "" $ head inputs)
+          putStrLn message
+          -- putStrLn $ "parsed: " ++ (show $ parse queryP "" "myaccount blah,bff,git > *\n")

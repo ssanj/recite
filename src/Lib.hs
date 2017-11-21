@@ -64,7 +64,7 @@ matchTypeP :: P Char
 matchTypeP = do char '>'
                 space
                 mv <- matchValueP
-                endOfLine
+                -- endOfLine
                 return mv
 
 queryP :: P Query
