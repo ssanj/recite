@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Types
                        , CommandParser
+                       , ConfigParser
   build-depends:       base >= 4.7 && < 5
                        , network-uri
                        , parsec

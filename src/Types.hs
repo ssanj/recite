@@ -2,6 +2,7 @@
 
 module Types(   Query
               , MatchType
+              , Entry
               , entry
               , matches
               , query
