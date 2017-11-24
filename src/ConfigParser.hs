@@ -8,7 +8,7 @@ import Text.Parsec
 
 type P = Parsec String ()
 
--- lob.project.type.subsystem="https://........"
+-- lob.project.type.subsystem=https://........
 
 tagP :: P [String]
 tagP =  many1 alphaNum `sepBy` char '.'
