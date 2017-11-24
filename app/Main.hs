@@ -2,7 +2,7 @@
 
 module Main where
 
-import Lib
+import CommandParser (queryP)
 import Text.Parsec (parse)
 import Prelude (($), (++), IO, head, null, putStrLn, show)
 import System.Environment
