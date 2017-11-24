@@ -2,28 +2,32 @@
 
 module CommandParser (queryP) where
 
-import Prelude (($), (.), Char, String, dropWhile, fmap, return)
+import Prelude ((.), Char, String, dropWhile, fmap, return)
 import Data.Char (isSpace)
 import Data.List (dropWhileEnd)
 import Text.Parsec
 
-import Types (MatchType, Query, all, none, query, some)
+import Types (Query, all, none, query, some)
 
 type P = Parsec String ()
 
+trim :: [Char] -> [Char]
 trim = dropWhileEnd isSpace . dropWhile isSpace
 
-tagP = alphaNum <|> space :: P Char
+tagP :: P Char
+tagP = alphaNum <|> space
 
-tagsP = many1 tagP `sepBy` char ','  :: P [String]
+tagsP :: P [String]
+tagsP = many1 tagP `sepBy` char ','
 
-matchValueP = oneOf "*?^" :: P Char
+matchValueP :: P Char
+matchValueP = oneOf "*?^"
 
 matchTypeP :: P Char
-matchTypeP = do char '>'
-                space
+matchTypeP = do
+                _ <- char '>'
+                _ <- space
                 mv <- matchValueP
-                -- endOfLine
                 return mv
 
 queryP :: P Query
@@ -33,4 +37,5 @@ queryP = do ts <- fmap (fmap trim) tagsP
                       '*' -> all
                       '?' -> some
                       '^' -> none
+                      _   -> none
             return (query ts m)
