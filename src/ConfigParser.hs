@@ -1,8 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module ConfigParser (entryP) where
+module ConfigParser (parseEntries) where
 
-import Prelude ((<$>), (<*>), (*>), Maybe, String, flip)
+import Prelude ((<$>), (.), (<*>), (*>), Maybe, String, flip, fmap)
+import Data.Maybe (catMaybes)
+import Data.Either (rights)
 import qualified Types as T
 import Text.Parsec
 
@@ -18,3 +20,6 @@ uriP = char '=' *> many1 anyChar
 
 entryP :: P (Maybe T.Entry)
 entryP = (flip T.entry) <$> tagP <*> uriP
+
+parseEntries :: [String] -> [T.Entry]
+parseEntries = catMaybes . rights . fmap (parse entryP "")
