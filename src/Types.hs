@@ -10,14 +10,12 @@ module Types(   Query
               , some
               , none) where
 
-import Prelude (($), Bool, Eq, Show, String, any, elem, not)
+import Prelude (($), Bool, Eq, Maybe, Show, String, any, elem, fmap, not)
 import Data.List (isInfixOf, sort)
+import Network.URI (URI, parseAbsoluteURI)
 
 -- Change this to a proper type later
 type Tag = String
-
--- Change this to a proper type later
-type URI = String
 
 data Entry = Entry URI [Tag] deriving (Show, Eq)
 
@@ -37,8 +35,8 @@ none = None
 query :: [Tag] -> MatchType -> Query
 query = Query
 
-entry :: String -> [Tag] -> Entry
-entry = Entry
+entry :: String -> [Tag] -> Maybe Entry
+entry uri tags = fmap (\u -> Entry u tags) (parseAbsoluteURI uri)
 
 matches :: Query -> Entry -> Bool
 matches (Query searchTags All)  (Entry _ tags) = sort searchTags `isInfixOf` sort tags
