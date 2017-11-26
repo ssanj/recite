@@ -7,19 +7,15 @@ import Data.Maybe (catMaybes)
 import Data.Either (rights)
 import qualified Types as T
 import Text.Parsec
+import qualified CommonParser as CP
 
-type P = Parsec String ()
+-- lob,project,type,subsystem=https://........
 
--- lob.project.type.subsystem=https://........
-
-tagP :: P [String]
-tagP =  many1 alphaNum `sepBy` char '.'
-
-uriP :: P String
+uriP :: CP.P String
 uriP = char '=' *> many1 anyChar
 
-entryP :: P (Maybe T.Entry)
-entryP = (flip T.entry) <$> tagP <*> uriP
+entryP :: CP.P (Maybe T.Entry)
+entryP = (flip T.entry) <$> CP.tagsP <*> uriP
 
 parseEntries :: [String] -> [T.Entry]
 parseEntries = catMaybes . rights . fmap (parse entryP "")

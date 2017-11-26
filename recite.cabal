@@ -18,6 +18,7 @@ library
   exposed-modules:     Types
                        , CommandParser
                        , ConfigParser
+                       , CommonParser
   build-depends:       base >= 4.7 && < 5
                        , network-uri
                        , parsec
