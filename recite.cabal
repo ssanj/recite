@@ -39,14 +39,19 @@ executable recite-exe
 test-suite recite-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             Spec.hs
+  main-is:             Driver.hs
   other-modules:       ConfigParserSpec
                        , CommonParserSpec
   build-depends:       base
                      , recite
+                     , parsec
                      , hspec
                      , QuickCheck
-                     , parsec
+                     , tasty
+                     , tasty-discover
+                     , tasty-hspec
+                     , tasty-quickcheck
+
   ghc-options:         -Wincomplete-uni-patterns -Wincomplete-record-updates
   default-language:    Haskell2010
 

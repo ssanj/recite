@@ -5,8 +5,10 @@ module CommonParserSpec where
 import Prelude (($), (.), (++), Char, Int, String, concat, fmap, return, show)
 import Data.Either (isRight)
 import Data.List (intercalate)
-import Test.Hspec
-import Test.QuickCheck
+import Test.Tasty
+import Test.Tasty.Hspec
+import Test.Tasty.QuickCheck
+
 import Text.Parsec
 import CommonParser (P, tagP, tagsP)
 
@@ -40,14 +42,13 @@ lineGen = do n <- choose (1, 5)
 parseTag :: Gen String -> P b -> Property
 parseTag g p = forAll g (isRight . parse p "")
 
-prop_TagP :: Property
-prop_TagP = parseTag tagPGenString tagP
+prop_parseTag :: Property
+prop_parseTag = parseTag tagPGenString tagP
 
-prop_TagsP :: Property
-prop_TagsP = parseTag lineGen tagsP
+prop_parseTags :: Property
+prop_parseTags = parseTag lineGen tagsP
 
-
-spec :: Spec
-spec = describe "parses" $ do
-         it "tagP parses a tag" $ do property prop_TagP
-         it "tagsP parses tags separated by comma" $ do property prop_TagsP
+-- spec_common :: Spec
+-- spec_common = describe "parses" $ do
+--          it "tagP parses a tag" $ do property prop_TagP
+--          it "tagsP parses tags separated by comma" $ do property prop_TagsP
