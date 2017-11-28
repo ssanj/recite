@@ -12,7 +12,10 @@ type P = Parsec String ()
 tagP :: P Char
 tagP = alphaNum <|> space <|> char '.'
 
+comma :: P Char
+comma = char ','
+
 -- Should this function take a (P Char) -> P [String] ?
 -- tagsP tagP
 tagsP :: P [String]
-tagsP = many1 tagP `sepBy` char ','
+tagsP = many1 tagP `sepBy` comma
