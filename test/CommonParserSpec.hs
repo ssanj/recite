@@ -6,7 +6,6 @@ import Prelude (($), (.), (++), Char, Int, String, concat, fmap, return, show)
 import Data.Either (isRight)
 import Data.List (intercalate)
 import Test.Tasty
-import Test.Tasty.Hspec
 import Test.Tasty.QuickCheck
 
 import Text.Parsec
@@ -42,13 +41,17 @@ lineGen = do n <- choose (1, 5)
 parseTag :: Gen String -> P b -> Property
 parseTag g p = forAll g (isRight . parse p "")
 
-prop_parseTag :: Property
-prop_parseTag = parseTag tagPGenString tagP
+parseTagProp :: Property
+parseTagProp = parseTag tagPGenString tagP
 
-prop_parseTags :: Property
-prop_parseTags = parseTag lineGen tagsP
+parseTagsProp :: Property
+parseTagsProp = parseTag lineGen tagsP
 
--- spec_common :: Spec
--- spec_common = describe "parses" $ do
---          it "tagP parses a tag" $ do property prop_TagP
---          it "tagsP parses tags separated by comma" $ do property prop_TagsP
+parseTagPropTest :: TestTree
+parseTagPropTest = testProperty "tagP parses a tag" parseTagProp
+
+parseTagsPropTest :: TestTree
+parseTagsPropTest = testProperty "tagsP parses tags separated by comma" parseTagsProp
+
+test_tags :: TestTree
+test_tags = testGroup "CommonParser" [parseTagPropTest, parseTagsPropTest]

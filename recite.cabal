@@ -45,11 +45,11 @@ test-suite recite-test
   build-depends:       base
                      , recite
                      , parsec
-                     , hspec
+                     , HUnit
                      , QuickCheck
                      , tasty
                      , tasty-discover
-                     , tasty-hspec
+                     , tasty-hunit
                      , tasty-quickcheck
 
   ghc-options:         -Wincomplete-uni-patterns -Wincomplete-record-updates
