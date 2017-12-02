@@ -1,10 +1,8 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module CommonParserSpec where
 
-import Prelude (($), (.), (++), Char, Int, String, concat, fmap, return, show)
 import Data.Either (isRight)
 import Data.List (intercalate)
+import Data.Foldable (concatMap)
 import Test.Tasty
 import Test.Tasty.QuickCheck
 
@@ -12,7 +10,7 @@ import Text.Parsec
 import CommonParser (P, tagP, tagsP)
 
 numeric :: String
-numeric = concat $ fmap show [0..9]
+numeric = concatMap show [0::Int ..9]
 
 alpha :: String
 alpha = ['A'..'Z'] ++ ['a'..'z']
@@ -27,7 +25,7 @@ tagPGen :: Gen Char
 tagPGen =  elements $ alpha ++ numeric ++ special
 
 tagPGenString :: Gen String
-tagPGenString = fmap (\e -> [e]) tagPGen
+tagPGenString = fmap (:[]) tagPGen
 
 tagsPGen :: Gen String
 tagsPGen = do n <- choose (3, 10)

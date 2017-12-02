@@ -5,7 +5,7 @@ module RIO (recite) where
 -- import Prelude (Either, IO, String, either, filter,undefined, putStrLn)
 -- import Prelude ((<$>), (.), (>>), (++), ($), Either, Either(Left, Right), Int, IO, String, either, filter, id, putStrLn, readFile, return, show, lines)
 import qualified ConfigParser as CP
-import CommandParser (queryP)
+import CommandParser (commandFormatString, queryP)
 import qualified Types as T
 import qualified Text.Parsec as P
 import qualified System.Exit as E
@@ -41,6 +41,7 @@ recite configFileName = do contentsOrError <- readConfig configFileName
                                                         input <- getLine
                                                         let instruction = parseInstruction input
                                                             entries = (CP.parseEntries.lines) contents
+                                                        _ <- putStrLn $ "Loaded entries:\n" ++ show entries
                                                         performInstruction instruction entries
 
 
@@ -62,7 +63,7 @@ parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" com
 
 performInstruction :: Instruction -> [T.Entry] -> IO ()
 performInstruction Quit _ = E.exitSuccess
-performInstruction (InvalidQuery _) _ = E.die "your command was invalid"
+performInstruction (InvalidQuery _) _ = E.die $ "your command was invalid. Format: " ++ commandFormatString
 performInstruction (ValidQuery q) entries =
     let results = filter (T.matches q) entries in
       putStrLn (printMatchResults results) >> E.exitSuccess

@@ -1,8 +1,6 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+module CommandParser (commandFormatString, queryP) where
 
-module CommandParser (queryP) where
-
-import Prelude ((.), Char, dropWhile, fmap, return)
+import Prelude hiding (all)
 import Data.Char (isSpace)
 import Data.List (dropWhileEnd)
 import Text.Parsec
@@ -10,7 +8,7 @@ import qualified CommonParser as CP
 
 import Types (Query, all, none, query, some)
 
-trim :: [Char] -> [Char]
+trim :: String -> String
 trim = dropWhileEnd isSpace . dropWhile isSpace
 
 matchValueP :: CP.P Char
@@ -32,3 +30,6 @@ queryP = do ts <- fmap (fmap trim) CP.tagsP
                       '^' -> none
                       _   -> none
             return (query ts m)
+
+commandFormatString :: String
+commandFormatString = "command,[command]* > [?|^|*]"

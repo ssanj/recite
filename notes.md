@@ -65,3 +65,9 @@ rca.myaccount.ui.personalisation.staging="https://........"
 rca.myaccount.ui.personalisation.production="https://........"
 
 --------------------
+
+1. Add a name to the config file format
+2. Add test for Command Parser
+3. It would be nice not to specify a matchType for a single tag
+4. Add action
+4. Extend command parser to include action
