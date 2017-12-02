@@ -19,10 +19,10 @@ library
                        , CommandParser
                        , ConfigParser
                        , CommonParser
+                       , RIO
   build-depends:       base >= 4.7 && < 5
                        , network-uri
                        , parsec
-                       , QuickCheck
   ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
   default-language:    Haskell2010
 
@@ -33,6 +33,7 @@ executable recite-exe
   build-depends:       base
                        , recite
                        , parsec
+                       , MissingH
   ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

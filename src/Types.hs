@@ -36,7 +36,7 @@ query :: [Tag] -> MatchType -> Query
 query = Query
 
 entry :: String -> [Tag] -> Maybe Entry
-entry uri tags = (flip Entry) <$> Just tags <*> (parseAbsoluteURI uri)
+entry uri tags = flip Entry <$> Just tags <*> (parseAbsoluteURI uri)
 
 matches :: Query -> Entry -> Bool
 matches (Query searchTags All)  (Entry _ tags) = sort searchTags `isInfixOf` sort tags

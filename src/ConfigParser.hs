@@ -15,7 +15,7 @@ uriP :: CP.P String
 uriP = char '=' *> many1 anyChar
 
 entryP :: CP.P (Maybe T.Entry)
-entryP = (flip T.entry) <$> CP.tagsP <*> uriP
+entryP = flip T.entry <$> CP.tagsP <*> uriP
 
 parseEntries :: [String] -> [T.Entry]
 parseEntries = catMaybes . rights . fmap (parse entryP "")
