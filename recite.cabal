@@ -43,15 +43,16 @@ test-suite recite-test
   main-is:             Driver.hs
   other-modules:       ConfigParserSpec
                        , CommonParserSpec
+                       , CommandParserSpec
   build-depends:       base
-                     , recite
-                     , parsec
-                     , HUnit
-                     , QuickCheck
-                     , tasty
-                     , tasty-discover
-                     , tasty-hunit
-                     , tasty-quickcheck
+                       , recite
+                       , parsec
+                       , HUnit
+                       , QuickCheck
+                       , tasty
+                       , tasty-discover
+                       , tasty-hunit
+                       , tasty-quickcheck
 
   ghc-options:         -Wincomplete-uni-patterns -Wincomplete-record-updates
   default-language:    Haskell2010

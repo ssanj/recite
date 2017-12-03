@@ -1,4 +1,8 @@
-module CommandParser (commandFormatString, queryP) where
+module CommandParser (
+                        commandFormatString
+                      , matchTypeP
+                      , matchValueP
+                      , queryP) where
 
 import Prelude hiding (all)
 import Data.Char (isSpace)
@@ -18,8 +22,7 @@ matchTypeP :: CP.P Char
 matchTypeP = do
                 _ <- char '>'
                 _ <- space
-                mv <- matchValueP
-                return mv
+                matchValueP
 
 queryP :: CP.P Query
 queryP = do ts <- fmap (fmap trim) CP.tagsP
