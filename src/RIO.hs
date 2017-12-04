@@ -13,6 +13,7 @@ import qualified Control.Exception as CE
 import qualified Control.Monad as M
 import qualified Data.Bifunctor as BF
 import qualified Data.List as L
+import qualified Search as S
 
 data XError = FileReadError String
 
@@ -65,7 +66,7 @@ performInstruction :: Instruction -> [T.Entry] -> IO ()
 performInstruction Quit _ = E.exitSuccess
 performInstruction (InvalidQuery _) _ = E.die $ "your command was invalid. Format: " ++ commandFormatString
 performInstruction (ValidQuery q) entries =
-    let results = filter (T.matches q) entries in
+    let results = filter (S.matches q) entries in
       putStrLn (printMatchResults results) >> E.exitSuccess
 
 -- askAction :: IO String

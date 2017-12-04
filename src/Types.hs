@@ -1,21 +1,20 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module Types(   Query
               , MatchType
               , Entry
               , entry
               , entryTags
               , entryUri
-              , matches
               , query
               , queryTags
               , queryMatchType
               , all
+              , isAll
               , some
-              , none) where
+              , isSome
+              , none
+              , isNone) where
 
-import Prelude (($), (<$>), (<*>), Bool, Eq, Maybe(Just), Show, String, any, elem, flip, not)
-import Data.List (isInfixOf, sort)
+import Prelude hiding (all)
 import Network.URI (URI, parseAbsoluteURI)
 
 -- Change this to a proper type later
@@ -36,6 +35,18 @@ some = Some
 none :: MatchType
 none = None
 
+isAll :: MatchType -> Bool
+isAll All = True
+isAll _ = False
+
+isSome :: MatchType -> Bool
+isSome Some = True
+isSome _ = False
+
+isNone :: MatchType -> Bool
+isNone None = True
+isNone _ = False
+
 query :: [Tag] -> MatchType -> Query
 query = Query
 
@@ -53,8 +64,3 @@ entryTags (Entry _ tags) = tags
 
 entryUri :: Entry -> URI
 entryUri (Entry uri _) = uri
-
-matches :: Query -> Entry -> Bool
-matches (Query searchTags All)  (Entry _ tags) = sort searchTags `isInfixOf` sort tags
-matches (Query searchTags Some) (Entry _ tags) = any (`elem` tags) searchTags
-matches (Query searchTags None) (Entry _ tags) = not $ any (`elem` tags) searchTags
