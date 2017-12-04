@@ -21,10 +21,17 @@ matchValuePTest = let parseResults = fmap (parse P.matchValueP "" . (: [])) matc
                   in testCase ("matchValue parser should match one of " ++ matchValueChars) results
 
 matchValuePInvalidProperty :: Property
-matchValuePInvalidProperty = property (\c -> collect c $ (c `notElem` matchValueChars) ==> isLeft $ parse P.matchValueP "" [c])
+matchValuePInvalidProperty = property (\c -> (c `notElem` matchValueChars) ==> isLeft $ parse P.matchValueP "" [c])
 
 matchValuePInvalidTest :: TestTree
-matchValuePInvalidTest = testProperty "matchValue parser does not match other chars"  matchValuePInvalidProperty
+matchValuePInvalidTest = testProperty "matchValue parser should not match other chars"  matchValuePInvalidProperty
+
+matchTypePTest :: TestTree
+matchTypePTest = let parseResults = fmap (parse P.matchTypeP "" . (\c -> "> " ++ [c])) matchValueChars
+                     results = mapM_ (\r -> assertBool ("expected Right got: " ++ show r) (isRight r)) parseResults
+                 in
+                   testCase ("matchType parser should match format: \"> [" ++ matchValueChars ++ "]\"") results
 
 test_commandParser :: TestTree
-test_commandParser = testGroup "CommandParser" [matchValuePTest, matchValuePInvalidTest]
+test_commandParser = testGroup "CommandParser" [matchValuePTest, matchValuePInvalidTest, matchTypePTest]
+
