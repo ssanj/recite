@@ -1,16 +1,13 @@
 module CommandParserSpec where
 
+import Gens
 import Data.Either (isLeft, isRight)
--- import Data.List (intercalate)
--- import Data.Foldable (concatMap)
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
--- import qualified Types as T
 import qualified CommandParser as P
 
 import Text.Parsec
--- import CommonParser (P, tagP, tagsP)
 
 matchValueChars :: String
 matchValueChars = "*?^"
@@ -23,8 +20,8 @@ matchValuePTest = let parseResults = fmap (parse P.matchValueP "" . (: [])) matc
 matchValuePInvalidProperty :: Property
 matchValuePInvalidProperty = property (\c -> (c `notElem` matchValueChars) ==> isLeft $ parse P.matchValueP "" [c])
 
-matchValuePInvalidTest :: TestTree
-matchValuePInvalidTest = testProperty "matchValue parser should not match other chars"  matchValuePInvalidProperty
+matchValuePInvalidPropertyTest :: TestTree
+matchValuePInvalidPropertyTest = testProperty "matchValue parser should not match other chars"  matchValuePInvalidProperty
 
 matchTypePTest :: TestTree
 matchTypePTest = let parseResults = fmap (parse P.matchTypeP "" . (\c -> "> " ++ [c])) matchValueChars
@@ -36,12 +33,24 @@ queryPTest :: TestTree
 queryPTest = let commands = "somecommand,nextcommand,third command,fourth.command > *"
                  result = parse P.queryP "" commands
              in
-               testCase "query parser should parse valid commands" $ assertBool ("expected Right got: " ++ show result) (isRight result)
+               testCase "query parser should parse a valid query" $ assertBool ("expected Right got: " ++ show result) (isRight result)
+
+queryPProperty :: Property
+queryPProperty =
+  forAll genLine (\line ->
+    let commands = fmap (\c -> line ++ " > " ++ [c]) matchValueChars
+    in
+      all (isRight . parse P.queryP "") commands
+  )
+
+queryPPropertyTest :: TestTree
+queryPPropertyTest = testProperty "query parser should parse all valid queries" queryPProperty
 
 test_commandParser :: TestTree
 test_commandParser = testGroup "CommandParser"
                        [  matchValuePTest
-                        , matchValuePInvalidTest
+                        , matchValuePInvalidPropertyTest
                         , matchTypePTest
-                        , queryPTest]
+                        , queryPTest
+                        , queryPPropertyTest]
 
