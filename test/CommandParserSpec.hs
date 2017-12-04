@@ -13,9 +13,10 @@ matchValueChars :: String
 matchValueChars = "*?^"
 
 matchValuePTest :: TestTree
-matchValuePTest = let parseResults = fmap (parse P.matchValueP "" . (: [])) matchValueChars
-                      results = mapM_ (\r -> assertBool ("expected Right got: " ++ show r) (isRight r)) parseResults
-                  in testCase ("matchValue parser should match one of " ++ matchValueChars) results
+matchValuePTest =
+  let parseResults = fmap (parse P.matchValueP "" . (: [])) matchValueChars
+      results = mapM_ (\r -> assertBool ("expected Right got: " ++ show r) (isRight r)) parseResults
+  in testCase ("matchValue parser should match one of " ++ matchValueChars) results
 
 matchValuePInvalidProperty :: Property
 matchValuePInvalidProperty = property (\c -> (c `notElem` matchValueChars) ==> isLeft $ parse P.matchValueP "" [c])
@@ -24,16 +25,27 @@ matchValuePInvalidPropertyTest :: TestTree
 matchValuePInvalidPropertyTest = testProperty "matchValue parser should not match other chars"  matchValuePInvalidProperty
 
 matchTypePTest :: TestTree
-matchTypePTest = let parseResults = fmap (parse P.matchTypeP "" . (\c -> "> " ++ [c])) matchValueChars
-                     results = mapM_ (\r -> assertBool ("expected Right got: " ++ show r) (isRight r)) parseResults
-                 in
-                   testCase ("matchType parser should match format: \"> [" ++ matchValueChars ++ "]\"") results
+matchTypePTest =
+  let parseResults = fmap (parse P.matchTypeP "" . (\c -> "> " ++ [c])) matchValueChars
+      results = mapM_ (\r -> assertBool ("expected Right got: " ++ show r) (isRight r)) parseResults
+  in
+    testCase ("matchType parser should match format: \"> [" ++ matchValueChars ++ "]\"") results
 
-queryPTest :: TestTree
-queryPTest = let commands = "somecommand,nextcommand,third command,fourth.command > *"
-                 result = parse P.queryP "" commands
-             in
-               testCase "query parser should parse a valid query" $ assertBool ("expected Right got: " ++ show result) (isRight result)
+queryPWithMatcherTest :: TestTree
+queryPWithMatcherTest =
+  let commands = "somecommand,nextcommand,third command,fourth.command > *"
+      result = parse P.queryP "" commands
+  in
+    testCase "query parser should parse a valid query with matches" $
+      assertBool ("expected Right got: " ++ show result) (isRight result)
+
+queryPWithCommandsOnlyTest :: TestTree
+queryPWithCommandsOnlyTest =
+  let commands = "somecommand,nextcommand,third command,fourth.command"
+      result = parse P.queryP "" commands
+  in
+    testCase "query parser should parse a valid query with only commands" $
+      assertBool ("expected Right got: " ++ show result) (isRight result)
 
 queryPProperty :: Property
 queryPProperty =
@@ -51,6 +63,7 @@ test_commandParser = testGroup "CommandParser"
                        [  matchValuePTest
                         , matchValuePInvalidPropertyTest
                         , matchTypePTest
-                        , queryPTest
+                        , queryPWithMatcherTest
+                        , queryPWithCommandsOnlyTest
                         , queryPPropertyTest]
 

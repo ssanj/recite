@@ -24,15 +24,21 @@ matchTypeP = do
                 _ <- space
                 matchValueP
 
+queryOnlyCommandsP :: CP.P Query
+queryOnlyCommandsP = fmap (\ts -> query (fmap trim ts) all) CP.tagsP
+
+queryWithMatchesP :: CP.P Query
+queryWithMatchesP = do ts <- fmap (fmap trim) CP.tagsP
+                       mt <- matchTypeP
+                       let m = case mt of
+                                 '*' -> all
+                                 '?' -> some
+                                 '^' -> none
+                                 _   -> none
+                       return (query ts m)
+
 queryP :: CP.P Query
-queryP = do ts <- fmap (fmap trim) CP.tagsP
-            mt <- matchTypeP
-            let m = case mt of
-                      '*' -> all
-                      '?' -> some
-                      '^' -> none
-                      _   -> none
-            return (query ts m)
+queryP = try queryWithMatchesP <|> queryOnlyCommandsP
 
 commandFormatString :: String
 commandFormatString = "command,[command]* > [?|^|*]"
