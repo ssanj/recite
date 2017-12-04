@@ -32,6 +32,16 @@ matchTypePTest = let parseResults = fmap (parse P.matchTypeP "" . (\c -> "> " ++
                  in
                    testCase ("matchType parser should match format: \"> [" ++ matchValueChars ++ "]\"") results
 
+queryPTest :: TestTree
+queryPTest = let commands = "somecommand,nextcommand,third command,fourth.command > *"
+                 result = parse P.queryP "" commands
+             in
+               testCase "query parser should parse valid commands" $ assertBool ("expected Right got: " ++ show result) (isRight result)
+
 test_commandParser :: TestTree
-test_commandParser = testGroup "CommandParser" [matchValuePTest, matchValuePInvalidTest, matchTypePTest]
+test_commandParser = testGroup "CommandParser"
+                       [  matchValuePTest
+                        , matchValuePInvalidTest
+                        , matchTypePTest
+                        , queryPTest]
 
