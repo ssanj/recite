@@ -12,10 +12,10 @@ parseTag :: Gen String -> P b -> Property
 parseTag g p = forAll g (isRight . parse p "")
 
 parseTagProp :: Property
-parseTagProp = parseTag tagPGenString tagP
+parseTagProp = parseTag genTagPString tagP
 
 parseTagsProp :: Property
-parseTagsProp = parseTag lineGen tagsP
+parseTagsProp = parseTag genLine tagsP
 
 parseTagPropTest :: TestTree
 parseTagPropTest = testProperty "tagP parses a tag" parseTagProp

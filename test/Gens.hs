@@ -1,7 +1,8 @@
 module Gens(
-              tagPGen
-            , tagPGenString
-            , lineGen
+              genTagP
+            , genTagsP
+            , genTagPString
+            , genLine
             ) where
 
 import Test.QuickCheck
@@ -20,17 +21,17 @@ special = " ."
 comma :: String
 comma = ","
 
-tagPGen :: Gen Char
-tagPGen =  elements $ alpha ++ numeric ++ special
+genTagP :: Gen Char
+genTagP =  elements $ alpha ++ numeric ++ special
 
-tagPGenString :: Gen String
-tagPGenString = fmap (:[]) tagPGen
+genTagPString :: Gen String
+genTagPString = fmap (:[]) genTagP
 
-tagsPGen :: Gen String
-tagsPGen = do n <- choose (3, 10)
-              vectorOf n tagPGen
+genTagsP :: Gen String
+genTagsP = do n <- choose (3, 10)
+              vectorOf n genTagP
 
-lineGen :: Gen String
-lineGen = do n <- choose (1, 5)
-             line <- vectorOf n tagsPGen
+genLine :: Gen String
+genLine = do n <- choose (1, 5)
+             line <- vectorOf n genTagsP
              return $ intercalate comma line
