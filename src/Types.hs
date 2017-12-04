@@ -4,8 +4,12 @@ module Types(   Query
               , MatchType
               , Entry
               , entry
+              , entryTags
+              , entryUri
               , matches
               , query
+              , queryTags
+              , queryMatchType
               , all
               , some
               , none) where
@@ -36,7 +40,19 @@ query :: [Tag] -> MatchType -> Query
 query = Query
 
 entry :: String -> [Tag] -> Maybe Entry
-entry uri tags = flip Entry <$> Just tags <*> (parseAbsoluteURI uri)
+entry uri tags = flip Entry <$> Just tags <*> parseAbsoluteURI uri
+
+queryTags :: Query -> [Tag]
+queryTags (Query tags _) = tags
+
+queryMatchType :: Query -> MatchType
+queryMatchType (Query _ m) = m
+
+entryTags :: Entry -> [Tag]
+entryTags (Entry _ tags) = tags
+
+entryUri :: Entry -> URI
+entryUri (Entry uri _) = uri
 
 matches :: Query -> Entry -> Bool
 matches (Query searchTags All)  (Entry _ tags) = sort searchTags `isInfixOf` sort tags
