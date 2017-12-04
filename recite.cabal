@@ -44,6 +44,7 @@ test-suite recite-test
   other-modules:       ConfigParserSpec
                        , CommonParserSpec
                        , CommandParserSpec
+                       , Gens
   build-depends:       base
                        , recite
                        , parsec
