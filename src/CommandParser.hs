@@ -2,6 +2,7 @@ module CommandParser (
                         commandFormatString
                       , matchTypeP
                       , matchValueP
+                      , actionP
                       , queryP) where
 
 import Prelude hiding (all)
@@ -10,7 +11,7 @@ import Data.List (dropWhileEnd)
 import Text.Parsec
 import qualified CommonParser as CP
 
-import Types (Query, all, none, query, some)
+import Types (Action, Query, action, all, none, query, some)
 
 trim :: String -> String
 trim = dropWhileEnd isSpace . dropWhile isSpace
@@ -39,6 +40,14 @@ queryWithMatchesP = do ts <- fmap (fmap trim) CP.tagsP
 
 queryP :: CP.P Query
 queryP = try queryWithMatchesP <|> queryOnlyCommandsP
+
+actionP :: CP.P (Int, Action)
+actionP = do num <- many1 digit
+             _   <- char ' '
+             a   <- char 'c' <|> char 'b'
+             case action a of
+               Left e    -> parserFail e
+               Right act -> return (read num :: Int, act)
 
 commandFormatString :: String
 commandFormatString = "command,[command]* > [?|^|*]"

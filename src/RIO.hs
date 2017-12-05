@@ -1,11 +1,7 @@
--- {-# LANGUAGE NoImplicitPrelude #-}
-
 module RIO (recite) where
 
--- import Prelude (Either, IO, String, either, filter,undefined, putStrLn)
--- import Prelude ((<$>), (.), (>>), (++), ($), Either, Either(Left, Right), Int, IO, String, either, filter, id, putStrLn, readFile, return, show, lines)
 import qualified ConfigParser as CP
-import CommandParser (commandFormatString, queryP)
+import CommandParser (commandFormatString, actionP, queryP)
 import qualified Types as T
 import qualified Text.Parsec as P
 import qualified System.Exit as E
@@ -18,8 +14,6 @@ import qualified Search as S
 data XError = FileReadError String
 
 data Instruction = Quit | ValidQuery T.Query | InvalidQuery P.ParseError
-
--- data Action = CopyToClipboard | OpenInBrowser
 
 -- 1. readConfig
 -- 2. parse Config
@@ -35,16 +29,14 @@ data Instruction = Quit | ValidQuery T.Query | InvalidQuery P.ParseError
 -- defaultConfigFileName = "recite.conf"
 
 recite :: String -> IO ()
-recite configFileName = do contentsOrError <- readConfig configFileName
-                           case contentsOrError of
-                                   Left  (FileReadError msg) -> E.die $ "Failed to load config: " ++ msg
-                                   Right contents -> do _ <- displayInstructions
-                                                        input <- getLine
-                                                        let instruction = parseInstruction input
-                                                            entries = (CP.parseEntries.lines) contents
-                                                        _ <- putStrLn $ "Loaded entries:\n" ++ show entries
-                                                        performInstruction instruction entries
+recite configFileName =
+  do contentsOrError <- readConfig configFileName
+     case contentsOrError of
+            Left  (FileReadError msg) -> E.die $ "Failed to load config: " ++ msg
+            Right contents -> (loopHome . CP.parseEntries.lines) contents
 
+loopHome :: [T.Entry] -> IO ()
+loopHome entries = displayInstructions >> loopInstructions entries
 
 ioExToString :: CE.IOException -> String
 ioExToString = CE.displayException
@@ -55,6 +47,11 @@ fileContentOrError = BF.bimap (FileReadError . ioExToString) id
 readConfig :: String -> IO (Either XError String)
 readConfig configFile = fileContentOrError `M.liftM` CE.try (readFile configFile)
 
+loopInstructions :: [T.Entry] -> IO ()
+loopInstructions entries = do line <- getLine
+                              let instruction = parseInstruction line
+                              performInstruction instruction entries
+
 displayInstructions :: IO ()
 displayInstructions = putStrLn "Enter a query or press :q to quit"
 
@@ -64,20 +61,43 @@ parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" com
 
 performInstruction :: Instruction -> [T.Entry] -> IO ()
 performInstruction Quit _ = E.exitSuccess
-performInstruction (InvalidQuery _) _ = E.die $ "your command was invalid. Format: " ++ commandFormatString
+performInstruction (InvalidQuery _) entries =
+  putStrLn ("your command was invalid. Format: " ++ commandFormatString) >> loopInstructions entries
 performInstruction (ValidQuery q) entries =
-    let results = filter (S.matches q) entries in
-      putStrLn (printMatchResults results) >> E.exitSuccess
+    do _ <- putStrLn ("searching for " ++ L.intercalate "," (T.queryTags q))
+       let results = filter (S.matches q) entries
+       _ <- putStrLn (printMatchResults results)
+       loopAction results
 
--- askAction :: IO String
--- askAction = putStrLn "Please select a number and an action to perform or select :h to go to the home screen"
+loopAction :: [T.Entry] -> IO ()
+loopAction []      = putStrLn "No matches found" >> E.exitSuccess
+loopAction results =
+  do _ <- askAction
+     action <- getLine
+     case action of
+       ":q"  -> E.exitSuccess
+       ":h"  -> loopHome results
+       other ->
+               let actionResult = P.parse actionP "" other in
+                 case actionResult of
+                   Left _   -> putStrLn "Invalid action " >> loopAction results
+                   Right (index, r) ->
+                     let isValidIndex = index >= 1 && length results >= index
+                         resultsLengthAsIndex = length results
+                     in
+                       if isValidIndex then
+                         let focus = show $ results !! (index - 1) in
+                           if T.isCopyToClipboard r then putStrLn ("copy to clipboard: " ++ focus) >> E.exitSuccess
+                           else if T.isOpenBrowser r then putStrLn ("open in browser:" ++ focus) >> E.exitSuccess
+                           else putStrLn "Invalid action. Please choose (c) Copy to clipboard or (b) Open in browser" >>
+                             loopAction results
+                       else
+                         putStrLn ("Invalid Index. Please choose a number between 1 and " ++ show resultsLengthAsIndex) >>
+                         loopAction results
 
--- parseAction :: String -> (Int, Action)
--- parseAction = undefined
+askAction :: IO ()
+askAction = putStrLn "Please select a number and an action to perform. Actions can be one of (c) Copy to clipboard (b) Open in browser.\nSelect :h to go to the home screen or :q to quit"
 
--- performAction :: (Int, Action) -> IO ()
--- performAction (line, CopyToClipboard) = undefined
--- performAction (line, OpenInBrowser) = undefined
 
 printMatchResults :: [T.Entry] -> String
 printMatchResults entries = L.intercalate "\n" ((\(index, entry) -> show index ++ ". " ++ show entry) <$> L.zip [(1::Int)..] entries)

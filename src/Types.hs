@@ -1,6 +1,8 @@
-module Types(   Query
+module Types(   Action
+              , Query
               , MatchType
               , Entry
+              , action
               , entry
               , entryTags
               , entryUri
@@ -12,7 +14,9 @@ module Types(   Query
               , some
               , isSome
               , none
-              , isNone) where
+              , isNone
+              , isCopyToClipboard
+              , isOpenBrowser) where
 
 import Prelude hiding (all)
 import Network.URI (URI, parseAbsoluteURI)
@@ -25,6 +29,8 @@ data Entry = Entry URI [Tag] deriving (Show, Eq)
 data MatchType = All | Some | None deriving (Show, Eq)
 
 data Query = Query [Tag] MatchType deriving (Show, Eq)
+
+data Action = CopyToClipboard | OpenBrowser deriving (Show, Eq)
 
 all :: MatchType
 all = All
@@ -64,3 +70,16 @@ entryTags (Entry _ tags) = tags
 
 entryUri :: Entry -> URI
 entryUri (Entry uri _) = uri
+
+action :: Char -> Either String Action
+action 'c' = Right CopyToClipboard
+action 'b' = Right OpenBrowser
+action a   = Left $ "unknown action: " ++ [a]
+
+isCopyToClipboard :: Action -> Bool
+isCopyToClipboard CopyToClipboard = True
+isCopyToClipboard _ = False
+
+isOpenBrowser :: Action -> Bool
+isOpenBrowser OpenBrowser = True
+isOpenBrowser _ = False
