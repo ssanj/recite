@@ -20,10 +20,7 @@ data ActionCommand =
 
 recite :: String -> IO ()
 recite configFileName =
-  do contentsOrError <- F.readConfig configFileName
-     case contentsOrError of
-       Left  (F.FileReadError msg) -> exitWithConfigError msg
-       Right contents              -> (loopHome . CP.parseEntries. lines) contents
+  F.withConfig configFileName exitWithConfigError (loopHome . CP.parseEntries. lines)
 
 loopHome :: [T.Entry] -> IO ()
 loopHome entries = printInstructions >> loopInstructions entries
