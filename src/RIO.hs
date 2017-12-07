@@ -13,7 +13,14 @@ import qualified Search as S
 
 data XError = FileReadError String
 
-data Instruction = Quit | ValidQuery T.Query | InvalidQuery P.ParseError
+data Instruction = QuitQuery | ValidQuery T.Query | InvalidQuery P.ParseError
+
+data ActionCommand =
+       QuitSearch                    |
+       Home                          |
+       NotAction P.ParseError        |
+       InvalidIndex Int Int T.Action |
+       ValidAction Int T.Action
 
 -- 1. readConfig
 -- 2. parse Config
@@ -56,11 +63,11 @@ displayInstructions :: IO ()
 displayInstructions = putStrLn "Enter a query or press :q to quit"
 
 parseInstruction :: String -> Instruction
-parseInstruction ":q" = Quit
+parseInstruction ":q" = QuitQuery
 parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" command)
 
 performInstruction :: Instruction -> [T.Entry] -> IO ()
-performInstruction Quit _ = E.exitSuccess
+performInstruction QuitQuery _ = E.exitSuccess
 performInstruction (InvalidQuery _) entries =
   putStrLn ("your command was invalid. Format: " ++ commandFormatString) >> loopInstructions entries
 performInstruction (ValidQuery q) entries =
@@ -69,31 +76,38 @@ performInstruction (ValidQuery q) entries =
        _ <- putStrLn (printMatchResults results)
        loopAction results
 
+parseActionCommand :: [T.Entry] -> String -> ActionCommand
+parseActionCommand _ ":q"        = QuitSearch
+parseActionCommand _ ":h"        = Home
+parseActionCommand results other =
+  let actionResult = P.parse actionP "" other
+  in case actionResult of
+       Left e           -> NotAction e
+       Right (index, r) ->
+         let isValidIndex = index >= 1 && length results >= index
+         in if isValidIndex then ValidAction index r
+            else InvalidIndex index (oneBasedIndex results) r
+
+oneBasedIndex :: [a] -> Int
+oneBasedIndex [] = 0
+oneBasedIndex xs = length xs + 1
+
 loopAction :: [T.Entry] -> IO ()
 loopAction []      = putStrLn "No matches found" >> E.exitSuccess
 loopAction results =
   do _ <- askAction
-     action <- getLine
-     case action of
-       ":q"  -> E.exitSuccess
-       ":h"  -> loopHome results
-       other ->
-               let actionResult = P.parse actionP "" other in
-                 case actionResult of
-                   Left _   -> putStrLn "Invalid action " >> loopAction results
-                   Right (index, r) ->
-                     let isValidIndex = index >= 1 && length results >= index
-                         resultsLengthAsIndex = length results
-                     in
-                       if isValidIndex then
-                         let focus = show $ results !! (index - 1) in
-                           if T.isCopyToClipboard r then putStrLn ("copy to clipboard: " ++ focus) >> E.exitSuccess
-                           else if T.isOpenBrowser r then putStrLn ("open in browser:" ++ focus) >> E.exitSuccess
-                           else putStrLn "Invalid action. Please choose (c) Copy to clipboard or (b) Open in browser" >>
-                             loopAction results
-                       else
-                         putStrLn ("Invalid Index. Please choose a number between 1 and " ++ show resultsLengthAsIndex) >>
-                         loopAction results
+     actionInput <- getLine
+     let actionCommand = parseActionCommand results actionInput
+     case actionCommand of
+       QuitSearch -> E.exitSuccess
+       Home  -> loopHome results
+       (NotAction _) -> putStrLn "Invalid action " >> loopAction results
+       InvalidIndex _ options _ ->
+         putStrLn ("Invalid Index. Please choose a number between 1 and " ++ show options) >>
+         loopAction results
+       ValidAction index action ->
+         let focus = show $ results !! (index - 1)
+         in putStrLn (show action ++ focus) >> E.exitSuccess
 
 askAction :: IO ()
 askAction = putStrLn "Please select a number and an action to perform. Actions can be one of (c) Copy to clipboard (b) Open in browser.\nSelect :h to go to the home screen or :q to quit"
