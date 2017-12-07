@@ -5,13 +5,9 @@ import CommandParser (commandFormatString, actionP, queryP)
 import qualified Types as T
 import qualified Text.Parsec as P
 import qualified System.Exit as E
-import qualified Control.Exception as CE
-import qualified Control.Monad as M
-import qualified Data.Bifunctor as BF
 import qualified Data.List as L
 import qualified Search as S
-
-data XError = FileReadError String
+import qualified FileUtil as F
 
 data Instruction = QuitQuery | ValidQuery T.Query | InvalidQuery P.ParseError
 
@@ -22,37 +18,15 @@ data ActionCommand =
        InvalidIndex Int Int T.Action |
        ValidAction Int T.Action
 
--- 1. readConfig
--- 2. parse Config
--- 3. Ask for instructions
--- 4. Parse instructions
--- 5. Perform instructions
--- 6. Display results
--- 7. Request Action
--- 8. Perform Action
--- 9. Go to 3
-
--- defaultConfigFileName :: String
--- defaultConfigFileName = "recite.conf"
-
 recite :: String -> IO ()
 recite configFileName =
-  do contentsOrError <- readConfig configFileName
+  do contentsOrError <- F.readConfig configFileName
      case contentsOrError of
-            Left  (FileReadError msg) -> exitWithConfigError msg
-            Right contents            -> (loopHome . CP.parseEntries.lines) contents
+       Left  (F.FileReadError msg) -> exitWithConfigError msg
+       Right contents              -> (loopHome . CP.parseEntries. lines) contents
 
 loopHome :: [T.Entry] -> IO ()
 loopHome entries = printInstructions >> loopInstructions entries
-
-ioExToString :: CE.IOException -> String
-ioExToString = CE.displayException
-
-fileContentOrError :: Either CE.IOException String -> Either XError String
-fileContentOrError = BF.bimap (FileReadError . ioExToString) id
-
-readConfig :: String -> IO (Either XError String)
-readConfig configFile = fileContentOrError `M.liftM` CE.try (readFile configFile)
 
 loopInstructions :: [T.Entry] -> IO ()
 loopInstructions entries = do line            <- getLine
@@ -103,7 +77,6 @@ loopAction results =
 
 printInstructions :: IO ()
 printInstructions = putStrLn "Enter a query or press :q to quit"
-
 
 printActionOptions :: IO ()
 printActionOptions = putStrLn "Please select a number and an action to perform. Actions can be one of (c) Copy to clipboard (b) Open in browser.\nSelect :h to go to the home screen or :q to quit"

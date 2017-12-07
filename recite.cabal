@@ -17,8 +17,9 @@ library
   hs-source-dirs:      src
   exposed-modules:     Types
                        , CommandParser
-                       , ConfigParser
                        , CommonParser
+                       , ConfigParser
+                       , FileUtil
                        , RIO
                        , Search
   build-depends:       base >= 4.7 && < 5
