@@ -8,6 +8,7 @@ import qualified System.Exit as E
 import qualified Data.List as L
 import qualified Search as S
 import qualified FileUtil as F
+import qualified Util as U
 
 data Instruction = QuitQuery | ValidQuery T.Query | InvalidQuery P.ParseError
 
@@ -51,13 +52,8 @@ parseActionCommand results other =
   in case actionResult of
        Left e             -> NotAction e
        Right (index, r)   ->
-         let isValidIndex = index >= 1 && length results >= index
-         in if isValidIndex then ValidAction index r
-            else InvalidIndex index (oneBasedIndex results) r
-
-oneBasedIndex :: [a] -> Int
-oneBasedIndex [] = 0
-oneBasedIndex xs = length xs + 1
+         if U.isOneBasedIndex index results then ValidAction index r
+         else InvalidIndex index (U.oneBasedLength results) r
 
 loopAction :: [T.Entry] -> IO ()
 loopAction []      = printNoMatchesAndExit
