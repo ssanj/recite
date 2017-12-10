@@ -10,18 +10,19 @@ import qualified FileUtil as F
 import qualified Util as U
 import qualified Print as PR
 
-data Instruction = QuitQuery | ValidQuery T.Query | InvalidQuery P.ParseError
+data Instruction = QuitQuery
+                 | ValidQuery T.Query
+                 | InvalidQuery P.ParseError
 
-data ActionCommand =
-       QuitSearch                    |
-       Home                          |
-       NotAction P.ParseError        |
-       InvalidIndex Int Int T.Action |
-       ValidAction Int T.Action
+data ActionCommand = QuitSearch
+                   | Home
+                   | NotAction P.ParseError
+                   | InvalidIndex Int Int T.Action
+                   | ValidAction Int T.Action
 
 recite :: String -> IO ()
 recite configFileName =
-  F.withConfig configFileName exitWithConfigError (loopHome . CP.parseEntries. lines)
+  F.fileContents configFileName exitWithConfigError (loopHome . CP.parseEntries. lines)
 
 loopHome :: [T.Entry] -> IO ()
 loopHome entries = PR.printInstructions >> loopInstructions entries
@@ -37,7 +38,7 @@ parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" com
 
 performInstruction :: Instruction -> [T.Entry] -> IO ()
 performInstruction QuitQuery _              = exit
-performInstruction (InvalidQuery _) entries = PR.printQueryFormatAndLoopInstructions entries loopInstructions
+performInstruction (InvalidQuery _) entries = PR.printQueryFormatAndLoopInstructions loopInstructions entries
 performInstruction (ValidQuery q) entries   =
     do _           <- PR.printSearchString q
        let results = filter (S.matches q) entries
@@ -64,9 +65,9 @@ loopAction results =
      case actionCommand of
        QuitSearch               -> exit
        Home                     -> loopHome results
-       (NotAction _)            -> PR.printActionErrorAndLoopAction results loopAction
-       InvalidIndex _ options _ -> PR.printInvalidIndexAndLoopAction options results loopAction
-       ValidAction index action -> PR.printActionAndExit action results index exit
+       (NotAction _)            -> PR.printActionErrorAndLoopAction loopAction results
+       InvalidIndex _ options _ -> PR.printInvalidIndexAndLoopAction loopAction options results
+       ValidAction index action -> PR.printActionAndExit exit action results index
 
 exit :: IO ()
 exit = E.exitSuccess
