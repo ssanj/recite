@@ -19,8 +19,8 @@ printInstructions = putStrLn "Enter a query or press :q to quit"
 printActionOptions :: IO ()
 printActionOptions = putStrLn "Please select a number and an action to perform. Actions can be one of (c) Copy to clipboard (b) Open in browser.\nSelect :h to go to the home screen or :q to quit"
 
-printQueryFormatAndLoopInstructions :: ([T.Entry] -> IO ()) -> [T.Entry] -> IO ()
-printQueryFormatAndLoopInstructions loopInstructions entries = putStrLn ("your command was invalid. Format: " ++ C.commandFormatString) >> loopInstructions entries
+printQueryFormatAndLoopInstructions :: (T.AllEntries -> IO ()) -> T.AllEntries -> IO ()
+printQueryFormatAndLoopInstructions nextAction = (putStrLn ("your command was invalid. Format: " ++ C.commandFormatString) >>) . nextAction
 
 printSearchString :: T.Query -> IO ()
 printSearchString q = putStrLn $ "searching for " ++ L.intercalate "," (T.queryTags q)

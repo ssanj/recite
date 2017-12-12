@@ -21,7 +21,7 @@
 1. Add State to manage entries and matches
 1. Display errors from parsing Action
 1. Add tests. Try [mocking IO](https://making.pusher.com/unit-testing-io-in-haskell/)
-1. Create ADT for Action interaction
+1. ~~Create ADT for Action interaction~~
 
 ## Model
 1. Create separate types for Entries and Matches (from search)

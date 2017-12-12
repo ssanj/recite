@@ -24,12 +24,12 @@ data ActionCommand = QuitSearch
 
 recite :: String -> IO ()
 recite configFileName =
-  F.fileContents configFileName exitWithConfigError (loopHome . CP.parseEntries. lines)
+  F.fileContents configFileName exitWithConfigError (loopHome . T.AllEntries . CP.parseEntries. lines)
 
-loopHome :: [T.Entry] -> IO ()
+loopHome :: T.AllEntries -> IO ()
 loopHome entries = PR.printInstructions >> loopInstructions entries
 
-loopInstructions :: [T.Entry] -> IO ()
+loopInstructions :: T.AllEntries -> IO ()
 loopInstructions entries = do line            <- getLine
                               let instruction = parseInstruction line
                               performInstruction instruction entries
@@ -38,14 +38,26 @@ parseInstruction :: String -> Instruction
 parseInstruction ":q"    = QuitQuery
 parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" command)
 
-performInstruction :: Instruction -> [T.Entry] -> IO ()
+performInstruction :: Instruction -> T.AllEntries -> IO ()
 performInstruction QuitQuery _              = exit
-performInstruction (InvalidQuery _) entries = PR.printQueryFormatAndLoopInstructions loopInstructions entries
-performInstruction (ValidQuery q) entries   =
+performInstruction (InvalidQuery _) allEntries = PR.printQueryFormatAndLoopInstructions loopInstructions allEntries
+performInstruction (ValidQuery q) allEntries   =
     do _           <- PR.printSearchString q
-       let results = filter (S.matches q) entries
-       PR.printMatchResults results >> loopAction results
+       let results = filter (S.matches q) $ T.unAllEntries allEntries
+       PR.printMatchResults results >> loopAction allEntries results
 
+loopAction :: T.AllEntries -> [T.Entry] -> IO ()
+loopAction allEntries []      = PR.printNoMatchesAndExit (loopHome allEntries)
+loopAction allEntries results =
+  do _                 <- PR.printActionOptions
+     actionInput       <- getLine
+     let actionCommand = parseActionCommand results actionInput
+     case actionCommand of
+       QuitSearch                -> exit
+       Home                      -> loopHome allEntries
+       (NotAction _)             -> PR.printActionErrorAndLoopAction (loopAction allEntries) results
+       InvalidIndex _ options _  -> PR.printInvalidIndexAndLoopAction (loopAction allEntries) options results
+       ValidAction entry command -> launchProcess entry command >> loopHome allEntries
 
 parseActionCommand :: [T.Entry] -> String -> ActionCommand
 parseActionCommand _ ":q"        = QuitSearch
@@ -58,27 +70,18 @@ parseActionCommand results other =
          if U.isOneBasedIndex index results then ValidAction (results !! (index - 1)) (T.toActionCommand r)
          else InvalidIndex index (U.oneBasedLength results) (T.toActionCommand r)
 
-loopAction :: [T.Entry] -> IO ()
-loopAction []      = PR.printNoMatchesAndExit exit
-loopAction results =
-  do _                 <- PR.printActionOptions
-     actionInput       <- getLine
-     let actionCommand = parseActionCommand results actionInput
-     case actionCommand of
-       QuitSearch                -> exit
-       Home                      -> loopHome results
-       (NotAction _)             -> PR.printActionErrorAndLoopAction loopAction results
-       InvalidIndex _ options _  -> PR.printInvalidIndexAndLoopAction loopAction options results
-       ValidAction entry command -> launchProcess entry command >> exit
-
 launchProcess :: T.Entry -> T.ActionCommand -> IO ()
-launchProcess entry T.CopyToClipboard = launch $ "echo '" ++ show (T.entryUri entry) ++ "' | pbcopy"
-launchProcess entry T.OpenInBrowser   = launch $ "open " ++ show (T.entryUri entry)
+launchProcess entry T.CopyToClipboard = launch T.CopyToClipboard $ "echo '" ++ show (T.entryUri entry) ++ "' | pbcopy"
+launchProcess entry T.OpenInBrowser   = launch T.OpenInBrowser $ "open " ++ show (T.entryUri entry)
 
-launch :: String -> IO ()
-launch command = either id exitCode `M.liftM` PROC.launchShell command >>= putStrLn
-  where exitCode E.ExitSuccess = "recite exited successfully"
-        exitCode (E.ExitFailure code) = "recite exited with an error: " ++ show code
+launch :: T.ActionCommand -> String -> IO ()
+launch actionCommand command = either id exitCode `M.liftM` PROC.launchShell command >>= \s -> putStr s >> putStrLn ""
+  where exitCode (PROC.LaunchResult E.ExitSuccess _ _) =
+          case actionCommand of
+            T.CopyToClipboard -> "copied to clipboard"
+            T.OpenInBrowser -> "opened in browser"
+        exitCode (PROC.LaunchResult (E.ExitFailure code) out err) =
+          "Invocation error: " ++ show code ++ "\nout: " ++ out ++ "\nerr: " ++ err
 
 exit :: IO ()
 exit = E.exitSuccess

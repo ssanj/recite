@@ -1,5 +1,6 @@
 module Types(   Action
               , ActionCommand (..)
+              , AllEntries (..)
               , Query
               , MatchType
               , Entry
@@ -25,6 +26,8 @@ import Network.URI (URI, parseAbsoluteURI)
 type Tag = String
 
 data Entry = Entry URI [Tag] deriving (Show, Eq)
+
+newtype AllEntries = AllEntries { unAllEntries :: [Entry] } deriving (Eq, Show)
 
 data MatchType = All | Some | None deriving (Show, Eq)
 
