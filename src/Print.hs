@@ -1,10 +1,10 @@
 module Print (  printInstructions
               , printActionOptions
-              , printQueryFormatAndLoopInstructions
+              , printQueryFormatAnd
               , printSearchString
-              , printNoMatchesAndExit
-              , printActionErrorAndLoopAction
-              , printInvalidIndexAndLoopAction
+              , printNoMatchesAnd
+              , printActionErrorAnd
+              , printInvalidIndexAnd
               , printActionAndExit
               , printMatchResults
               ) where
@@ -19,20 +19,20 @@ printInstructions = putStrLn "Enter a query or press :q to quit"
 printActionOptions :: IO ()
 printActionOptions = putStrLn "Please select a number and an action to perform. Actions can be one of (c) Copy to clipboard (b) Open in browser.\nSelect :h to go to the home screen or :q to quit"
 
-printQueryFormatAndLoopInstructions :: (T.AllEntries -> IO ()) -> T.AllEntries -> IO ()
-printQueryFormatAndLoopInstructions nextAction = (putStrLn ("your command was invalid. Format: " ++ C.commandFormatString) >>) . nextAction
+printQueryFormatAnd :: (T.AllEntries -> IO ()) -> T.AllEntries -> IO ()
+printQueryFormatAnd nextAction = (putStrLn ("your command was invalid. Format: " ++ C.commandFormatString) >>) . nextAction
 
 printSearchString :: T.Query -> IO ()
 printSearchString q = putStrLn $ "searching for " ++ L.intercalate "," (T.queryTags q)
 
-printNoMatchesAndExit :: IO () -> IO ()
-printNoMatchesAndExit nextAction = putStrLn "No matches found" >> nextAction
+printNoMatchesAnd :: IO () -> IO ()
+printNoMatchesAnd nextAction = putStrLn "No matches found" >> nextAction
 
-printActionErrorAndLoopAction :: ([T.Entry] -> IO ()) -> [T.Entry] ->IO ()
-printActionErrorAndLoopAction nextAction results = putStrLn "Invalid action " >> nextAction results
+printActionErrorAnd :: ([T.Entry] -> IO ()) -> [T.Entry] ->IO ()
+printActionErrorAnd nextAction results = putStrLn "Invalid action " >> nextAction results
 
-printInvalidIndexAndLoopAction :: ([T.Entry] -> IO ()) -> Int -> [T.Entry] -> IO ()
-printInvalidIndexAndLoopAction nextAction options results  =
+printInvalidIndexAnd :: ([T.Entry] -> IO ()) -> Int -> [T.Entry] -> IO ()
+printInvalidIndexAnd nextAction options results  =
   putStrLn ("Invalid Index. Please choose a number between 1 and " ++ show options) >>
          nextAction results
 

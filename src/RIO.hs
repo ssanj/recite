@@ -40,14 +40,14 @@ parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" com
 
 performInstruction :: Instruction -> T.AllEntries -> IO ()
 performInstruction QuitQuery _              = exit
-performInstruction (InvalidQuery _) allEntries = PR.printQueryFormatAndLoopInstructions loopInstructions allEntries
+performInstruction (InvalidQuery _) allEntries = PR.printQueryFormatAnd loopInstructions allEntries
 performInstruction (ValidQuery q) allEntries   =
     do _           <- PR.printSearchString q
        let results = filter (S.matches q) $ T.unAllEntries allEntries
        PR.printMatchResults results >> loopAction allEntries results
 
 loopAction :: T.AllEntries -> [T.Entry] -> IO ()
-loopAction allEntries []      = PR.printNoMatchesAndExit (loopHome allEntries)
+loopAction allEntries []      = PR.printNoMatchesAnd (loopHome allEntries)
 loopAction allEntries results =
   do _                 <- PR.printActionOptions
      actionInput       <- getLine
@@ -55,8 +55,8 @@ loopAction allEntries results =
      case actionCommand of
        QuitSearch                -> exit
        Home                      -> loopHome allEntries
-       (NotAction _)             -> PR.printActionErrorAndLoopAction (loopAction allEntries) results
-       InvalidIndex _ options _  -> PR.printInvalidIndexAndLoopAction (loopAction allEntries) options results
+       (NotAction _)             -> PR.printActionErrorAnd (loopAction allEntries) results
+       InvalidIndex _ options _  -> PR.printInvalidIndexAnd (loopAction allEntries) options results
        ValidAction entry command -> launchProcess entry command >> loopHome allEntries
 
 parseActionCommand :: [T.Entry] -> String -> ActionCommand
