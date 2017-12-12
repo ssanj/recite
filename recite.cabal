@@ -22,12 +22,14 @@ library
                        , FileUtil
                        , MainR
                        , Print
+                       , Process
                        , RIO
                        , Search
                        , Util
   build-depends:       base >= 4.7 && < 5
                        , network-uri
                        , parsec
+                       , process
                        , MissingH
   ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
   default-language:    Haskell2010

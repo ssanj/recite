@@ -9,6 +9,8 @@ import qualified Search as S
 import qualified FileUtil as F
 import qualified Util as U
 import qualified Print as PR
+import qualified Process as PROC
+import qualified Control.Monad as M
 
 data Instruction = QuitQuery
                  | ValidQuery T.Query
@@ -17,8 +19,8 @@ data Instruction = QuitQuery
 data ActionCommand = QuitSearch
                    | Home
                    | NotAction P.ParseError
-                   | InvalidIndex Int Int T.Action
-                   | ValidAction Int T.Action
+                   | InvalidIndex Int Int T.ActionCommand
+                   | ValidAction T.Entry T.ActionCommand
 
 recite :: String -> IO ()
 recite configFileName =
@@ -53,8 +55,8 @@ parseActionCommand results other =
   in case actionResult of
        Left e             -> NotAction e
        Right (index, r)   ->
-         if U.isOneBasedIndex index results then ValidAction index r
-         else InvalidIndex index (U.oneBasedLength results) r
+         if U.isOneBasedIndex index results then ValidAction (results !! (index - 1)) (T.toActionCommand r)
+         else InvalidIndex index (U.oneBasedLength results) (T.toActionCommand r)
 
 loopAction :: [T.Entry] -> IO ()
 loopAction []      = PR.printNoMatchesAndExit exit
@@ -63,11 +65,20 @@ loopAction results =
      actionInput       <- getLine
      let actionCommand = parseActionCommand results actionInput
      case actionCommand of
-       QuitSearch               -> exit
-       Home                     -> loopHome results
-       (NotAction _)            -> PR.printActionErrorAndLoopAction loopAction results
-       InvalidIndex _ options _ -> PR.printInvalidIndexAndLoopAction loopAction options results
-       ValidAction index action -> PR.printActionAndExit exit action results index
+       QuitSearch                -> exit
+       Home                      -> loopHome results
+       (NotAction _)             -> PR.printActionErrorAndLoopAction loopAction results
+       InvalidIndex _ options _  -> PR.printInvalidIndexAndLoopAction loopAction options results
+       ValidAction entry command -> launchProcess entry command >> exit
+
+launchProcess :: T.Entry -> T.ActionCommand -> IO ()
+launchProcess entry T.CopyToClipboard = launch $ "echo '" ++ show (T.entryUri entry) ++ "' | pbcopy"
+launchProcess entry T.OpenInBrowser   = launch $ "open " ++ show (T.entryUri entry)
+
+launch :: String -> IO ()
+launch command = either id exitCode `M.liftM` PROC.launchShell command >>= putStrLn
+  where exitCode E.ExitSuccess = "recite exited successfully"
+        exitCode (E.ExitFailure code) = "recite exited with an error: " ++ show code
 
 exit :: IO ()
 exit = E.exitSuccess

@@ -1,4 +1,5 @@
 module Types(   Action
+              , ActionCommand (..)
               , Query
               , MatchType
               , Entry
@@ -15,8 +16,7 @@ module Types(   Action
               , isSome
               , none
               , isNone
-              , isCopyToClipboard
-              , isOpenBrowser) where
+              , toActionCommand) where
 
 import Prelude hiding (all)
 import Network.URI (URI, parseAbsoluteURI)
@@ -30,7 +30,9 @@ data MatchType = All | Some | None deriving (Show, Eq)
 
 data Query = Query [Tag] MatchType deriving (Show, Eq)
 
-data Action = CopyToClipboard | OpenBrowser deriving (Show, Eq)
+data Action = Clipboard | Browser deriving (Show, Eq)
+
+data ActionCommand = CopyToClipboard | OpenInBrowser deriving (Show, Eq)
 
 all :: MatchType
 all = All
@@ -72,14 +74,10 @@ entryUri :: Entry -> URI
 entryUri (Entry uri _) = uri
 
 action :: Char -> Either String Action
-action 'c' = Right CopyToClipboard
-action 'b' = Right OpenBrowser
+action 'c' = Right Clipboard
+action 'b' = Right Browser
 action a   = Left $ "unknown action: " ++ [a]
 
-isCopyToClipboard :: Action -> Bool
-isCopyToClipboard CopyToClipboard = True
-isCopyToClipboard _ = False
-
-isOpenBrowser :: Action -> Bool
-isOpenBrowser OpenBrowser = True
-isOpenBrowser _ = False
+toActionCommand :: Action -> ActionCommand
+toActionCommand Clipboard = CopyToClipboard
+toActionCommand Browser   = OpenInBrowser
