@@ -79,7 +79,7 @@ launch actionCommand command = either id exitCode `M.liftM` PROC.launchShell com
   where exitCode (PROC.LaunchResult E.ExitSuccess _ _) =
           case actionCommand of
             T.CopyToClipboard -> "copied to clipboard"
-            T.OpenInBrowser -> "opened in browser"
+            T.OpenInBrowser   -> "opened in browser"
         exitCode (PROC.LaunchResult (E.ExitFailure code) out err) =
           "Invocation error: " ++ show code ++ "\nout: " ++ out ++ "\nerr: " ++ err
 
