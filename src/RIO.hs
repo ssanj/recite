@@ -67,8 +67,9 @@ parseActionCommand results other =
   in case actionResult of
        Left e             -> NotAction e
        Right (index, r)   ->
-         if U.isOneBasedIndex index results then ValidAction (results !! (index - 1)) (T.toActionCommand r)
-         else InvalidIndex index (U.oneBasedLength results) (T.toActionCommand r)
+         let invalid = InvalidIndex index (length results) (T.toActionCommand r)
+             valid   = flip ValidAction (T.toActionCommand r)
+         in maybe invalid valid $ U.at (index - 1) results
 
 launchProcess :: T.Entry -> T.ActionCommand -> IO ()
 launchProcess entry T.CopyToClipboard = launch T.CopyToClipboard $ "echo '" ++ show (T.entryUri entry) ++ "' | pbcopy"
