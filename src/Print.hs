@@ -5,7 +5,6 @@ module Print (  printInstructions
               , printNoMatchesAnd
               , printActionErrorAnd
               , printInvalidIndexAnd
-              , printActionAndExit
               , printMatchResults
               ) where
 
@@ -35,11 +34,6 @@ printInvalidIndexAnd :: ([T.Entry] -> IO ()) -> Int -> [T.Entry] -> IO ()
 printInvalidIndexAnd nextAction options results  =
   putStrLn ("Invalid Index. Please choose a number between 1 and " ++ show options) >>
          nextAction results
-
-printActionAndExit :: IO () -> T.Action -> [T.Entry] -> Int -> IO ()
-printActionAndExit nextAction action results index =
-  let focus = show $ results !! (index - 1)
-  in putStrLn (show action ++ focus) >> nextAction
 
 printMatchResults :: [T.Entry] -> IO ()
 printMatchResults entries = putStrLn $ L.intercalate "\n" ((\(index, entry) -> show index ++ ". " ++ show entry) <$> L.zip [(1::Int)..] entries)
