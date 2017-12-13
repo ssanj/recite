@@ -10,7 +10,7 @@ import qualified FileUtil as F
 import qualified Util as U
 import qualified Print as PR
 import qualified Process as PROC
-import qualified Control.Monad as M
+import qualified RProcess as RP
 
 data Instruction = QuitQuery
                  | ValidQuery T.Query
@@ -57,7 +57,7 @@ loopAction allEntries results =
        Home                      -> loopHome allEntries
        (NotAction _)             -> PR.printActionErrorAnd (loopAction allEntries) results
        InvalidIndex _ options _  -> PR.printInvalidIndexAnd (loopAction allEntries) options results
-       ValidAction entry command -> launchProcess entry command >> loopHome allEntries
+       ValidAction entry command -> RP.launchProcess entry command >> loopHome allEntries
 
 parseActionCommand :: [T.Entry] -> String -> ActionCommand
 parseActionCommand _ ":q"        = QuitSearch
@@ -70,19 +70,6 @@ parseActionCommand results other =
          let invalid = InvalidIndex index (length results) (T.toActionCommand r)
              valid   = flip ValidAction (T.toActionCommand r)
          in maybe invalid valid $ U.at (index - 1) results
-
-launchProcess :: T.Entry -> T.ActionCommand -> IO ()
-launchProcess entry T.CopyToClipboard = launch T.CopyToClipboard $ "echo '" ++ show (T.entryUri entry) ++ "' | pbcopy"
-launchProcess entry T.OpenInBrowser   = launch T.OpenInBrowser $ "open " ++ show (T.entryUri entry)
-
-launch :: T.ActionCommand -> String -> IO ()
-launch actionCommand command = either id exitCode `M.liftM` PROC.launchShell command >>= \s -> putStr s >> putStrLn ""
-  where exitCode (PROC.LaunchResult E.ExitSuccess _ _) =
-          case actionCommand of
-            T.CopyToClipboard -> "copied to clipboard"
-            T.OpenInBrowser   -> "opened in browser"
-        exitCode (PROC.LaunchResult (E.ExitFailure code) out err) =
-          "Invocation error: " ++ show code ++ "\nout: " ++ out ++ "\nerr: " ++ err
 
 exit :: IO ()
 exit = E.exitSuccess
