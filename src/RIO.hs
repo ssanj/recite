@@ -9,7 +9,6 @@ import qualified Search as S
 import qualified FileUtil as F
 import qualified Util as U
 import qualified Print as PR
-import qualified Process as PROC
 import qualified RProcess as RP
 
 data Instruction = QuitQuery

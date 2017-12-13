@@ -65,3 +65,6 @@ rca.myaccount.ui.personalisation.staging="https://........"
 rca.myaccount.ui.personalisation.production="https://........"
 
 --------------------
+data Config = Config { tags :: [String], uri :: String } deriving (Show, Generic)
+instance FromJSON Config
+Y.decodeFileEither "sample/recite.yml" :: IO (Either Y.ParseException [Config])
