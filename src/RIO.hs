@@ -1,12 +1,10 @@
-module RIO (recite) where
+module RIO (loopHome) where
 
-import qualified ConfigParser as CP
 import CommandParser (actionP, queryP)
 import qualified Types as T
 import qualified Text.Parsec as P
 import qualified System.Exit as E
 import qualified Search as S
-import qualified FileUtil as F
 import qualified Util as U
 import qualified Print as PR
 import qualified RProcess as RP
@@ -21,9 +19,9 @@ data ActionCommand = QuitSearch
                    | InvalidIndex Int Int T.ActionCommand
                    | ValidAction T.Entry T.ActionCommand
 
-recite :: String -> IO ()
-recite configFileName =
-  F.fileContents configFileName exitWithConfigError (loopHome . T.AllEntries . CP.parseEntries. lines)
+-- recite :: String -> IO ()
+-- recite configFileName =
+--   F.fileContents configFileName exitWithConfigError (loopHome . T.AllEntries . CP.parseEntries. lines)
 
 loopHome :: T.AllEntries -> IO ()
 loopHome entries = PR.printInstructions >> loopInstructions entries
@@ -72,7 +70,3 @@ parseActionCommand results other =
 
 exit :: IO ()
 exit = E.exitSuccess
-
-exitWithConfigError :: String -> IO ()
-exitWithConfigError message = E.die $ "Failed to load config: " ++ message
-

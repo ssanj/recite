@@ -2,7 +2,7 @@
 
 ## Config file
 1. Add a name to the config file format
-1. Move to Yaml format
+1. ~~Move to Yaml format~~
 
 ## Data file
 1. Create data file/db
