@@ -1,11 +1,13 @@
-  - tags:
+  - name: 'Scala 2.12 api'
+    tags:
       - 'scala'
       - '2.12'
       - 'api'
       - 'doc'
     uri: 'https://www.scala-lang.org/api/current/'
 
-  - tags:
+  - name: 'Quickcheck2 manual'
+    tags:
       - 'haskell'
       - 'quickcheck'
       - 'pbt'
@@ -13,33 +15,39 @@
       - 'manual'
     uri: 'http://www.cse.chalmers.se/~rjmh/QuickCheck/manual.html'
 
-  - tags:
+
+  - name: 'Hoogle'
+    tags:
       - 'haskell'
       - 'hoogle'
     uri: 'https://www.haskell.org/hoogle/'
 
-  - tags:
+  - name: 'Stack manual'
+    tags:
       - 'haskell'
       - 'stack'
       - 'doc'
       - 'manual'
     uri: 'https://docs.haskellstack.org/en/stable/README/'
 
-  - tags:
+  - name: 'SublimeHaskell Github'
+    tags:
       - 'haskell'
       - 'ide'
       - 'sublime'
       - 'blog'
     uri: 'https://github.com/SublimeHaskell/SublimeHaskell'
 
-  - tags:
+  - name: 'Practical haskell editors'
+    tags:
       - 'haskell'
       - 'ide'
       - 'blog'
       - 'stack'
     uri: 'https://seanhess.github.io/2015/08/05/practical-haskell-editors.html'
 
-  - tags:
+  - name: 'Basic Syntax Extensions in GHC'
+    tags:
       - 'haskell'
       - 'extension'
       - 'school of haskell'

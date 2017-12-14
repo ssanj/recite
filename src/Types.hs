@@ -6,8 +6,10 @@ module Types(   Action
               , Entry
               , action
               , entry
+              , entryName
               , entryTags
               , entryUri
+              , prettyEntry
               , query
               , queryTags
               , queryMatchType
@@ -20,12 +22,14 @@ module Types(   Action
               , toActionCommand) where
 
 import Prelude hiding (all)
+import Text.Printf (printf)
+import Data.List (sort)
 import Network.URI (URI, parseAbsoluteURI)
 
 -- Change this to a proper type later
 type Tag = String
 
-data Entry = Entry URI [Tag] deriving (Show, Eq)
+data Entry = Entry String URI [Tag] deriving (Show, Eq)
 
 newtype AllEntries = AllEntries { unAllEntries :: [Entry] } deriving (Eq, Show)
 
@@ -61,8 +65,8 @@ isNone _ = False
 query :: [Tag] -> MatchType -> Query
 query = Query
 
-entry :: String -> [Tag] -> Maybe Entry
-entry uri tags = flip Entry <$> Just tags <*> parseAbsoluteURI uri
+entry :: String -> String -> [Tag] -> Maybe Entry
+entry name uri tags = Entry <$> Just name <*> parseAbsoluteURI uri <*> Just tags
 
 queryTags :: Query -> [Tag]
 queryTags (Query tags _) = tags
@@ -70,11 +74,18 @@ queryTags (Query tags _) = tags
 queryMatchType :: Query -> MatchType
 queryMatchType (Query _ m) = m
 
+-- TODO: Add unique type to this
+entryName :: Entry -> String
+entryName (Entry name _ _) = name
+
 entryTags :: Entry -> [Tag]
-entryTags (Entry _ tags) = tags
+entryTags (Entry _ _ tags) = sort tags
 
 entryUri :: Entry -> URI
-entryUri (Entry uri _) = uri
+entryUri (Entry _ uri _) = uri
+
+prettyEntry :: Entry -> String
+prettyEntry (Entry name _ _) = printf "%s" name
 
 action :: Char -> Either String Action
 action 'c' = Right Clipboard
