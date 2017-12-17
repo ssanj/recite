@@ -29,6 +29,7 @@ library
                        , Util
                        , Yaml
   build-depends:       base >= 4.7 && < 5
+                       , bytestring
                        , network-uri
                        , parsec
                        , process
@@ -51,10 +52,12 @@ test-suite recite-test
   hs-source-dirs:      test
   main-is:             Driver.hs
   other-modules:       ConfigParserSpec
+                       , ConfigYamlSpec
                        , CommonParserSpec
                        , CommandParserSpec
                        , Gens
   build-depends:       base
+                       , bytestring
                        , recite
                        , parsec
                        , HUnit

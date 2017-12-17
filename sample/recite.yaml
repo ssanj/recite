@@ -15,7 +15,6 @@
       - 'manual'
     uri: 'http://www.cse.chalmers.se/~rjmh/QuickCheck/manual.html'
 
-
   - name: 'Hoogle'
     tags:
       - 'haskell'

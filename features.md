@@ -1,8 +1,10 @@
 # Features
 
 ## Config file
-1. Add a name to the config file format
+1. ~~Add a name to the config file format~~
 1. ~~Move to Yaml format~~
+1. Remove ConfigParser and Test
+1. Add test for loading Yaml config
 
 ## Data file
 1. Create data file/db
@@ -11,6 +13,7 @@
 1. ~~Add test for Command Parser~~
 1. ~~It would be nice not to specify a matchType for a single tag~~
 1. ~~Extend command parser to include action~~
+1. Unmatched commands return all results
 
 ## Action Parsing
 1. ~~Add action~~
