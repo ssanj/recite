@@ -3,8 +3,8 @@
 ## Config file
 1. ~~Add a name to the config file format~~
 1. ~~Move to Yaml format~~
-1. Remove ConfigParser and Test
-1. Add test for loading Yaml config
+1. ~~ Remove ConfigParser and Test ~~
+1. ~~Add test for loading Yaml config~~
 
 ## Data file
 1. Create data file/db
@@ -29,7 +29,7 @@
 1. Add tests. Try [mocking IO](https://making.pusher.com/unit-testing-io-in-haskell/)
 1. ~~Create ADT for Action interaction~~
 1. ~~Implement copy and open browser~~
-1. Move all process-related code to Process.hs
+1. ~~Move all process-related code to Process.hs~~
 
 ## Model
 1. ~~Create separate types for Entries and Matches (from search)~~
