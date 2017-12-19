@@ -21,10 +21,6 @@ data ActionCommand = QuitSearch
                    | InvalidIndex Int Int T.ActionCommand
                    | ValidAction T.Entry T.ActionCommand
 
--- recite :: String -> IO ()
--- recite configFileName =
---   F.fileContents configFileName exitWithConfigError (loopHome . T.AllEntries . CP.parseEntries. lines)
-
 loopHome :: T.AllEntries -> IO ()
 loopHome entries = printInstructions >> loopInstructions entries
 

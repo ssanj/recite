@@ -16,12 +16,14 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Types
+                       , Classes
                        , CommandParser
                        , CommonParser
                        , FileUtil
                        , MainR
                        , Process
                        , RIO
+                       , RM
                        , RProcess
                        , Search
                        , Util
