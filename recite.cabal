@@ -18,10 +18,8 @@ library
   exposed-modules:     Types
                        , CommandParser
                        , CommonParser
-                       , ConfigParser
                        , FileUtil
                        , MainR
-                       , Print
                        , Process
                        , RIO
                        , RProcess
@@ -51,8 +49,7 @@ test-suite recite-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Driver.hs
-  other-modules:       ConfigParserSpec
-                       , ConfigYamlSpec
+  other-modules:       ConfigYamlSpec
                        , CommonParserSpec
                        , CommandParserSpec
                        , Gens
