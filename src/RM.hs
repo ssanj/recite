@@ -11,7 +11,7 @@ import qualified CommandParser as C
 import qualified Data.List as L
 import qualified Util as U
 import Text.Printf (printf)
-import Classes (ConsoleR, readLine, writeLine, write, SystemR, exit, ProcessR, launchShell)
+import Classes (ConsoleR, readLine, writeLine, write, exit, ProcessR, launchShell, ProgramR)
 
 data Instruction = QuitQuery
                  | ValidQuery T.Query
@@ -23,10 +23,10 @@ data ActionCommand = QuitSearch
                    | InvalidIndex Int Int T.ActionCommand
                    | ValidAction T.Entry T.ActionCommand
 
-loopHome :: (ConsoleR m, SystemR m, ProcessR m) => T.AllEntries -> m ()
+loopHome :: ProgramR m => T.AllEntries -> m ()
 loopHome entries = printInstructions >> loopInstructions entries
 
-loopInstructions :: (ConsoleR m, SystemR m, ProcessR m) => T.AllEntries -> m ()
+loopInstructions :: ProgramR m => T.AllEntries -> m ()
 loopInstructions entries = do line            <- readLine
                               let instruction = parseInstruction line
                               performInstruction instruction entries
@@ -35,7 +35,7 @@ parseInstruction :: String -> Instruction
 parseInstruction ":q"    = QuitQuery
 parseInstruction command = either InvalidQuery ValidQuery (P.parse queryP "" command)
 
-performInstruction :: (ConsoleR m, SystemR m, ProcessR m) => Instruction -> T.AllEntries -> m ()
+performInstruction :: ProgramR m => Instruction -> T.AllEntries -> m ()
 performInstruction QuitQuery _                 = exit
 performInstruction (InvalidQuery _) allEntries = printQueryFormat >> loopInstructions allEntries
 performInstruction (ValidQuery q) allEntries   =
@@ -43,7 +43,7 @@ performInstruction (ValidQuery q) allEntries   =
        let results = filter (S.matches q) $ T.unAllEntries allEntries
        printMatchResults results >> loopAction allEntries results
 
-loopAction :: (ConsoleR m, SystemR m, ProcessR m) => T.AllEntries -> [T.Entry] -> m ()
+loopAction :: ProgramR m => T.AllEntries -> [T.Entry] -> m ()
 loopAction allEntries []      = printNoMatches >> loopHome allEntries
 loopAction allEntries results =
   do _                 <- printActionOptions

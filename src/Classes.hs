@@ -1,6 +1,7 @@
 module Classes(  ConsoleR(..)
                , SystemR (..)
-               , ProcessR(..)) where
+               , ProcessR(..)
+               , ProgramR) where
 
 import qualified Process as P
 import qualified System.Exit as E
@@ -17,6 +18,8 @@ class Monad m => ProcessR m where
   launchShell :: String -> m (Either String P.LaunchResult)
 
 
+class (ConsoleR m, SystemR m, ProcessR m) => ProgramR m
+
 instance ConsoleR IO where
   writeLine = putStrLn
   write     = putStr
@@ -28,3 +31,4 @@ instance SystemR IO where
 instance ProcessR IO where
   launchShell = P.launchShell
 
+instance ProgramR IO
