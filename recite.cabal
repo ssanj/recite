@@ -34,6 +34,7 @@ library
                        , parsec
                        , process
                        , MissingH
+                       , transformers
                        , yaml
   ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
   default-language:    Haskell2010
