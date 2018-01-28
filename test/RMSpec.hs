@@ -20,26 +20,32 @@ import qualified Types as T
 
 newtype Log = Log { unlog :: [String] } deriving (Monoid, Show)
 
-instance Monad m => ConsoleR (StateT String (WriterT Log m)) where
+instance Monad m => ConsoleR (StateT [String] (WriterT Log m)) where
   writeLine s = (lift . tell) $ Log [printf "%s\n" s]
   write     s = (lift . tell) $ Log [s]
-  readLine  =  get >>= (\s -> lift (tell $ Log [s])) >> get
+  readLine  =  do
+    s <- get
+    let current = head s -- String
+        next    = tail s -- []
+    _ <- (lift . tell) $ Log [current]
+    _ <- put next
+    return current
 
-instance Monad m => SystemR (StateT String (WriterT Log m)) where
+instance Monad m => SystemR (StateT [String] (WriterT Log m)) where
   exit = (lift . tell) $ Log ["exit"]
 
-instance Monad m => ProcessR (StateT String (WriterT Log m)) where
+instance Monad m => ProcessR (StateT [String] (WriterT Log m)) where
   launchShell cmd =
       lift $
       writer (Right (P.LaunchResult E.ExitSuccess "this is sysout" "this is syserr"),
               Log [printf "launchShell called with: %s" cmd])
 
-instance Monad m => ProgramR (StateT String (WriterT Log m))
+instance Monad m => ProgramR (StateT [String] (WriterT Log m))
 
 successfulHomeExitTest :: TestTree
 successfulHomeExitTest = testCase "exits from home screen" $
-                          let resultSWI = R.loopHome (T.AllEntries []) :: StateT String (WriterT Log Identity) ()
-                              log = (runIdentity . execWriterT . runStateT resultSWI) ":q"
+                          let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
+                              log = (runIdentity . execWriterT . runStateT resultSWI) [":q"]
                           in (unlog log) @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
 
 test_rm :: TestTree
