@@ -58,6 +58,8 @@ queryPProperty =
 queryPPropertyTest :: TestTree
 queryPPropertyTest = testProperty "query parser should parse all valid queries" queryPProperty
 
+-- TODO: Add failure scenarios
+
 test_commandParser :: TestTree
 test_commandParser = testGroup "CommandParser"
                        [  matchValuePTest

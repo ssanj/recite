@@ -48,5 +48,16 @@ successfulHomeExitTest = testCase "exits from home screen" $
                               log = (runIdentity . execWriterT . runStateT resultSWI) [":q"]
                           in (unlog log) @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
 
+invalidQueryTest :: TestTree
+invalidQueryTest = testCase "handles invalid query syntax" $
+                    let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
+                        log = (runIdentity . execWriterT . runStateT resultSWI) [">" ,":q"]
+                    in (unlog log) @?=
+                        ["Enter a query or press :q to quit\n",
+                         ">",
+                         "your command was invalid. Format: command,[command]* > [?|^|*]\n",
+                         ":q",
+                         "exit"]
+
 test_rm :: TestTree
-test_rm = testGroup "RM" [successfulHomeExitTest]
+test_rm = testGroup "RM" [successfulHomeExitTest, invalidQueryTest]

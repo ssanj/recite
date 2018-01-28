@@ -18,4 +18,4 @@ comma = char ','
 -- Should this function take a (P Char) -> P [String] ?
 -- tagsP tagP
 tagsP :: P [String]
-tagsP = many1 tagP `sepBy` comma
+tagsP = many1 tagP `sepBy1` comma
