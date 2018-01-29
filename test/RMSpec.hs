@@ -7,6 +7,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import Data.Functor.Identity
+import Data.Maybe (catMaybes)
 import Control.Monad.Trans.Writer.Lazy
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Class
@@ -42,22 +43,48 @@ instance Monad m => ProcessR (StateT [String] (WriterT Log m)) where
 
 instance Monad m => ProgramR (StateT [String] (WriterT Log m))
 
+runStack :: StateT [String] (WriterT Log Identity) () -> [String] -> [String]
+runStack st cmd = (unlog . runIdentity . execWriterT) $ runStateT st cmd
+
 successfulHomeExitTest :: TestTree
 successfulHomeExitTest = testCase "exits from home screen" $
                           let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
-                              log = (runIdentity . execWriterT . runStateT resultSWI) [":q"]
-                          in (unlog log) @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
+                              log = runStack resultSWI [":q"]
+                          in log @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
 
 invalidQueryTest :: TestTree
 invalidQueryTest = testCase "handles invalid query syntax" $
                     let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
-                        log = (runIdentity . execWriterT . runStateT resultSWI) [">" ,":q"]
-                    in (unlog log) @?=
+                        log = runStack resultSWI [">" ,":q"]
+                    in log @?=
                         ["Enter a query or press :q to quit\n",
                          ">",
                          "your command was invalid. Format: command,[command]* > [?|^|*]\n",
                          ":q",
                          "exit"]
 
+validQueryTest :: TestTree
+validQueryTest = testCase "handle valid query" $
+                    let iphone  = T.entry "iPhone" "https://www.apple.com/iphone/" ["apple", "phone", "iphone"]
+                        ipad    = T.entry "iPad" "https://www.apple.com/ipad/" ["apple", "tablet", "ipad"]
+                        homepod = T.entry "HomePod" "https://www.apple.com/homepod/" ["apple", "speaker", "homepod"]
+                        pixel2  = T.entry "Pixel2" "https://store.google.com/product/pixel_2" ["google", "phone", "pixel2"]
+                        entries = T.AllEntries $ catMaybes [iphone, pixel2, ipad, homepod]
+                        resultSWI = R.loopHome entries :: StateT [String] (WriterT Log Identity) ()
+                        log = runStack resultSWI ["apple" , "2 c", ":q"]
+                    in log @?=
+                        ["Enter a query or press :q to quit\n",
+                         "apple",
+                         "searching for apple\n",
+                         "1. iPhone [apple,iphone,phone]\n2. iPad [apple,ipad,tablet]\n3. HomePod [apple,homepod,speaker]\n",
+                         "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                         "2 c",
+                         "launchShell called with: echo 'https://www.apple.com/ipad/' | pbcopy",
+                         "copied to clipboard",
+                         "\n",
+                         "Enter a query or press :q to quit\n",
+                         ":q",
+                         "exit"]
+
 test_rm :: TestTree
-test_rm = testGroup "RM" [successfulHomeExitTest, invalidQueryTest]
+test_rm = testGroup "RM" [successfulHomeExitTest, invalidQueryTest, validQueryTest]
