@@ -63,14 +63,16 @@ invalidQueryTest = testCase "handles invalid query syntax" $
                          ":q",
                          "exit"]
 
+mobileDevices :: T.AllEntries
+mobileDevices = let iphone    = T.entry "iPhone" "https://www.apple.com/iphone/" ["apple", "phone", "iphone"]
+                    ipad      = T.entry "iPad" "https://www.apple.com/ipad/" ["apple", "tablet", "ipad"]
+                    homepod   = T.entry "HomePod" "https://www.apple.com/homepod/" ["apple", "speaker", "homepod"]
+                    pixel2    = T.entry "Pixel2" "https://store.google.com/product/pixel_2" ["google", "phone", "pixel2"]
+                in T.AllEntries $ catMaybes [iphone, pixel2, ipad, homepod]
+
 validQueryTest :: TestTree
 validQueryTest = testCase "handle valid query" $
-                    let iphone    = T.entry "iPhone" "https://www.apple.com/iphone/" ["apple", "phone", "iphone"]
-                        ipad      = T.entry "iPad" "https://www.apple.com/ipad/" ["apple", "tablet", "ipad"]
-                        homepod   = T.entry "HomePod" "https://www.apple.com/homepod/" ["apple", "speaker", "homepod"]
-                        pixel2    = T.entry "Pixel2" "https://store.google.com/product/pixel_2" ["google", "phone", "pixel2"]
-                        entries   = T.AllEntries $ catMaybes [iphone, pixel2, ipad, homepod]
-                        resultSWI = R.loopHome entries :: StateT [String] (WriterT Log Identity) ()
+                    let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
                         w         = runStack resultSWI ["apple" , "2 c", ":q"]
                     in w @?=
                         ["Enter a query or press :q to quit\n",
@@ -86,5 +88,29 @@ validQueryTest = testCase "handle valid query" $
                          ":q",
                          "exit"]
 
+invalidIndexTest :: TestTree
+invalidIndexTest = testCase "handle invalid index" $
+                     let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
+                         w         = runStack resultSWI ["apple" , "4 c", "2 c", ":q"]
+                     in w @?=
+                         ["Enter a query or press :q to quit\n",
+                          "apple",
+                          "searching for apple\n",
+                          "1. iPhone [apple,iphone,phone]\n2. iPad [apple,ipad,tablet]\n3. HomePod [apple,homepod,speaker]\n",
+                          "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                          "4 c",
+                          "Invalid Index. Please choose a number between 1 and 3\n",
+                          "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                          "2 c",
+                          "launchShell called with: echo 'https://www.apple.com/ipad/' | pbcopy",
+                          "copied to clipboard",
+                          "\n",
+                          "Enter a query or press :q to quit\n",
+                          ":q",
+                          "exit"]
+
 test_rm :: TestTree
-test_rm = testGroup "RM" [successfulHomeExitTest, invalidQueryTest, validQueryTest]
+test_rm = testGroup "RM" [successfulHomeExitTest,
+                          invalidQueryTest,
+                          validQueryTest,
+                          invalidIndexTest]
