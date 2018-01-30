@@ -109,8 +109,30 @@ invalidIndexTest = testCase "handle invalid index" $
                           ":q",
                           "exit"]
 
+invalidActionTest :: TestTree
+invalidActionTest = testCase "handle invalid action" $
+                      let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
+                          w         = runStack resultSWI ["apple" , "2 z", "1 b", ":q"]
+                      in w @?=
+                          ["Enter a query or press :q to quit\n",
+                           "apple",
+                           "searching for apple\n",
+                           "1. iPhone [apple,iphone,phone]\n2. iPad [apple,ipad,tablet]\n3. HomePod [apple,homepod,speaker]\n",
+                           "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                           "2 z",
+                           "Invalid action \n",
+                           "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                           "1 b",
+                           "launchShell called with: open https://www.apple.com/iphone/",
+                           "opened in browser",
+                           "\n",
+                           "Enter a query or press :q to quit\n",
+                           ":q",
+                           "exit"]
+
 test_rm :: TestTree
 test_rm = testGroup "RM" [successfulHomeExitTest,
                           invalidQueryTest,
                           validQueryTest,
-                          invalidIndexTest]
+                          invalidIndexTest,
+                          invalidActionTest]
