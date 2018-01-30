@@ -46,11 +46,11 @@ instance Monad m => ProgramR (StateT [String] (WriterT Log m))
 runStack :: StateT [String] (WriterT Log Identity) () -> [String] -> [String]
 runStack st cmd = (unlog . runIdentity . execWriterT) $ runStateT st cmd
 
-successfulHomeExitTest :: TestTree
-successfulHomeExitTest = testCase "exits from home screen" $
-                          let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
-                              w         = runStack resultSWI [":q"]
-                          in w @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
+quitFromHomeScreenTest :: TestTree
+quitFromHomeScreenTest = testCase "exits from home screen" $
+                           let resultSWI = R.loopHome (T.AllEntries []) :: StateT [String] (WriterT Log Identity) ()
+                               w         = runStack resultSWI [":q"]
+                           in w @?= ["Enter a query or press :q to quit\n", ":q", "exit"]
 
 invalidQueryTest :: TestTree
 invalidQueryTest = testCase "handles invalid query syntax" $
@@ -130,9 +130,54 @@ invalidActionTest = testCase "handle invalid action" $
                            ":q",
                            "exit"]
 
+goHomeFromSearchScreenTest :: TestTree
+goHomeFromSearchScreenTest = testCase "go home from search" $
+                               let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
+                                   w         = runStack resultSWI ["apple" , ":h", ":q"]
+                               in w @?=
+                                   ["Enter a query or press :q to quit\n",
+                                    "apple",
+                                    "searching for apple\n",
+                                    "1. iPhone [apple,iphone,phone]\n2. iPad [apple,ipad,tablet]\n3. HomePod [apple,homepod,speaker]\n",
+                                    "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                                    ":h",
+                                    "Enter a query or press :q to quit\n",
+                                    ":q",
+                                    "exit"]
+
+quitFromSearchScreenTest :: TestTree
+quitFromSearchScreenTest = testCase "quit from search" $
+                             let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
+                                 w         = runStack resultSWI ["apple" , ":q"]
+                             in w @?=
+                                 ["Enter a query or press :q to quit\n",
+                                  "apple",
+                                  "searching for apple\n",
+                                  "1. iPhone [apple,iphone,phone]\n2. iPad [apple,ipad,tablet]\n3. HomePod [apple,homepod,speaker]\n",
+                                  "Please select a number and an action to perform.\nActions can be one of:\nc - Copy to clipboard\nb - Open in browser\nAlternatively choose :h to go to the home screen or :q to quit\n",
+                                  ":q",
+                                  "exit"]
+
+searchWithoutResultsTest :: TestTree
+searchWithoutResultsTest = testCase "search without results" $
+                             let resultSWI = R.loopHome mobileDevices :: StateT [String] (WriterT Log Identity) ()
+                                 w         = runStack resultSWI ["samsung" , ":q"]
+                             in w @?=
+                                 ["Enter a query or press :q to quit\n",
+                                  "samsung",
+                                  "searching for samsung\n",
+                                  "\n",
+                                  "No matches found\n",
+                                  "Enter a query or press :q to quit\n",
+                                  ":q",
+                                  "exit"]
+
 test_rm :: TestTree
-test_rm = testGroup "RM" [successfulHomeExitTest,
+test_rm = testGroup "RM" [quitFromHomeScreenTest,
                           invalidQueryTest,
                           validQueryTest,
                           invalidIndexTest,
-                          invalidActionTest]
+                          invalidActionTest,
+                          goHomeFromSearchScreenTest,
+                          quitFromSearchScreenTest,
+                          searchWithoutResultsTest]
